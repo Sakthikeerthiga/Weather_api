@@ -11,9 +11,11 @@
         <h1 class="title">Weather App</h1>
         <div class="input-group">
             <input type="text" id="city" placeholder="Enter city name" class="input-field">
-            <button onclick="getWeather()" class="btn">Get Weather</button>
+            <button onclick="getWeather()" class="btn">Get Current Weather</button>
+            <button onclick="getForecast()" class="btn">Get 5-Day Forecast</button>
         </div>
         <div class="weather-data" id="weather-data"></div>
+        <div class="forecast-data" id="forecast-data"></div>
     </div>
     <script>
         async function getWeather() {
@@ -24,13 +26,40 @@
             }
             const response = await fetch(`/weather?city=${city}`);
             const data = await response.json();
-            document.getElementById('weather-data').innerHTML = `
-                <div class="weather-card">
+            if (data.city) {
+                document.getElementById('weather-data').innerHTML = `
                     <p><strong>City:</strong> ${data.city}</p>
                     <p><strong>Temperature:</strong> ${data.temperature}</p>
                     <p><strong>Condition:</strong> ${data.condition}</p>
-                </div>
-            `;
+                `;
+            } else {
+                alert(data.error || "Error fetching weather data");
+            }
+        }
+
+        async function getForecast() {
+            const city = document.getElementById('city').value;
+            if (!city) {
+                alert("Please enter a city name!");
+                return;
+            }
+            const response = await fetch(`/forecast?city=${city}`);
+            const data = await response.json();
+            if (data.forecast) {
+                const forecastHTML = data.forecast.map(f => `
+                    <div class="forecast-card">
+                        <p><strong>${f.datetime}</strong></p>
+                        <p><strong>Temp:</strong> ${f.temperature}</p>
+                        <p><strong>Condition:</strong> ${f.condition}</p>
+                    </div>
+                `).join('');
+                document.getElementById('forecast-data').innerHTML = `
+                    <h3>5-Day Forecast for ${data.city}</h3>
+                    <div class="forecast-cards">${forecastHTML}</div>
+                `;
+            } else {
+                alert(data.error || "Error fetching forecast");
+            }
         }
     </script>
 </body>
